@@ -24,7 +24,8 @@ class PenggunaController extends Controller
     public function create()
     {
         //
-        echo "<h1>Borang Pengguna Baru</h1>";
+        // echo "<h1>Borang Pengguna Baru</h1>";
+        return view('pengguna.create');
     }
 
     /**
@@ -33,6 +34,28 @@ class PenggunaController extends Controller
     public function store(Request $request)
     {
         //
+        $validation_rules = [
+            'name' => 'required|string|min:5|max:255',
+            'email' => 'required|email|max:255|unique:users',
+            'role' => 'required|in:admin,member',
+            'password' => [
+                'required',
+                'min:8',
+                'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9]).*$/'
+            ],
+        ];
+
+        $validated_data = $request->validate($validation_rules);
+
+        // User::create([
+        //     'name' => $request->input('name'),
+        //     'email' => $request->input('email'),
+        //     'password' => Hash::make($request->input('password')),
+        // ]);
+
+        User::create($validated_data);
+
+        return redirect()->route('pengguna.index')->with('success', 'Pengguna berjaya didaftarkan.');
     }
 
     /**
@@ -50,7 +73,9 @@ class PenggunaController extends Controller
     public function edit(string $id)
     {
         //
-        echo "<h1>Borang Kemaskini Pengguna</h1>";
+        $user = User::findOrFail($id);
+        return view('pengguna.edit', compact('user'));
+        // echo "<h1>Borang Kemaskini Pengguna</h1>";
     }
 
     /**
@@ -59,6 +84,33 @@ class PenggunaController extends Controller
     public function update(Request $request, string $id)
     {
         //
+        $user = User::findOrFail($id);
+        $validation_rules = [
+            'name' => 'required|string|min:5|max:255',
+            'email' => 'required|email|max:255|unique:users,email,' . $user->id,
+            'role' => 'required|in:admin,member'
+        ];
+
+        if ($request->filled('password')) {  // Use 'filled' to check if the password is not empty
+            $validation_rules['password'] = [
+                'required',
+                'min:8',
+                'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9]).*$/'
+            ];
+        }
+
+        $validated_data = $request->validate($validation_rules);
+
+        $user->name = $validated_data['name'];
+        $user->email = $validated_data['email'];
+        $user->role = $validated_data['role'];
+        if (!empty($validated_data['password'])) {
+            $user->password = bcrypt($validated_data['password']);
+        }
+        $user->save();
+
+        return redirect()->route('pengguna.edit', $user->id)->with('success', 'Pengguna berjaya dikemaskini.');
+
     }
 
     /**
