@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Plan;
 use App\Models\User;
+use App\Models\Membership;
 use Illuminate\Http\Request;
 
 class PenggunaController extends Controller
@@ -74,7 +76,10 @@ class PenggunaController extends Controller
     {
         //
         $user = User::findOrFail($id);
-        return view('pengguna.edit', compact('user'));
+        $role_options = User::USER_ROLES;
+        $plan_options = Plan::getFormattedPlans();
+        $membership_options = Membership::MEMBERSHIP_STATUS;
+        return view('pengguna.edit', compact('user', 'role_options', 'plan_options', 'membership_options'));
         // echo "<h1>Borang Kemaskini Pengguna</h1>";
     }
 

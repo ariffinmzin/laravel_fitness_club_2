@@ -11,6 +11,11 @@ class User extends Authenticatable implements MustVerifyEmail
 {
     use HasFactory, Notifiable;
 
+    public const USER_ROLES = [
+        'admin' => 'Admin',
+        'member' => 'Member',
+    ];
+
     /**
      * The attributes that are mass assignable.
      *

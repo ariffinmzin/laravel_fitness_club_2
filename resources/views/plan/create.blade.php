@@ -32,7 +32,7 @@
         <form action="{{ route('plan.store') }}" method="post">
             @csrf
 
-            <x-input 
+            <x-form.input 
                 label="Name"
                 type="text"
                 name="name"
@@ -41,7 +41,7 @@
                 :error="$errors->first('name')"
             />
 
-            <x-input 
+            <x-form.input 
                 label="Code"
                 type="text"
                 name="code"
@@ -50,7 +50,7 @@
                 :error="$errors->first('code')"
             />
 
-            <x-input 
+            <x-form.input 
                 label="Price"
                 type="number"
                 name="price"
@@ -59,7 +59,7 @@
                 :error="$errors->first('price')"
             />
 
-            <div class="mb-3">
+            <!-- <div class="mb-3">
                 <label for="duration" class="form-label">Tempoh</label>
 
                 <select name="duration" id="duration" class="form-select">
@@ -70,9 +70,28 @@
                     <option value="6 months">6 months</option>
                     <option value="1 year">1 year</option>
                 </select>
-            </div>
+            </div> -->
 
-                <div class="mb-3">
+            <x-form.select
+                name="duration"
+                id="duration"
+                label="Duration"
+                :value="old('duration')"
+                :options="$duration_options"
+                :error="$errors->first('duration')"
+            />
+
+            <x-form.radiobutton
+                name="active"
+                id="active"
+                label="Active"
+                :value="old('active')"
+                :options="$active_options"
+                :error="$errors->first('active')"
+                :inline="false"
+            />
+
+                <!-- <div class="mb-3">
                     <label for="active" class="form-label">Active</label>
                     <label for="radio-1" class="form-check">
                         <input id="radio-1" type="radio" class="form-check-input" name="active" value="1">
@@ -82,7 +101,7 @@
                         <input id="radio-0" type="radio" class="form-check-input" name="active" value="0">
                         <span class="form-check-label">Inactive</span>
                     </label>
-                </div>
+                </div> -->
 
                 <button class="btn btn-primary" type="submit">Simpan</button>
 

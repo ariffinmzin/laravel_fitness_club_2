@@ -23,7 +23,12 @@ class PlanController extends Controller
     public function create()
     {
         //
-        return view('plan.create');
+        $active_options = Plan::ACTIVE_OPTIONS;
+
+        $duration_options = ["" => "Sila Pilih Pelan"] + Plan::DURATION_OPTIONS;
+
+        return view('plan.create', compact('active_options', 'duration_options'));
+
     }
 
     /**
@@ -32,6 +37,20 @@ class PlanController extends Controller
     public function store(Request $request)
     {
         //
+
+        $duration_validation = implode(",", array_keys(Plan::DURATION_OPTIONS));
+        $active_validation = implode(",", array_keys(Plan::ACTIVE_OPTIONS));
+        $validated_data = $request->validate([
+            'name' => 'required|string|unique:plans,name|min:4|max:20',
+            'code' => 'required|string|unique:plans,code|min:4|max:20',
+            'duration' => 'required|in:' . $duration_validation,
+            'price' => 'required|numeric',
+            'active' => 'required|in:' . $active_validation,
+        ]);
+
+        $plan = Plan::create($validated_data);
+
+        return redirect()->route('plan.index')->with('success', 'Plan created successfully');
     }
 
     /**
