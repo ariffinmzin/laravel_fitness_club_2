@@ -11,6 +11,16 @@
 
 @section('content')
     <div class="container-xl">
+        @if (session('success'))
+            <div class="row">
+                <div class="col">
+                    <div class="alert alert-success mt-3">
+                        <p>{{ session('success') }}</p>
+                    </div>
+                </div>
+            </div>
+        @endif
+
         <div class="row justify-content-center mb-5">
             <div class="col-12 col-md-6">
                 <div class="card">
@@ -106,10 +116,112 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
                                 <div class="invalid-feedback">
                                     {{ $message }}
                                 </div>
                             @enderror
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -200,14 +312,16 @@
                                 :error="$errors->first('postcode')"
                             />
 
-                            <x-form.input
-                                name="country_id"
+                            <x-form.select
+                                :options="$countries"
                                 label="Negara"
-                                type="text"
+                                name="country_id"
                                 id="country_id"
-                                :value="old('country_id',$user->country_id)"
+                                :value="old('country_id', $user->country_id)"
                                 :error="$errors->first('country_id')"
                             />
+
+                            <!-- <x-form.input name="country_id" label="Negara" type="text" id="country_id" :value="old('country_id',$user->country_id)" :error="$errors->first('country_id')"  /> -->
 
                             <button class="btn btn-primary" type="submit">
                                 Simpan
@@ -222,16 +336,12 @@
                     <div class="card-body">
                         <h3>Maklumat Keahlian</h3>
                         <form
-                            action="{{ route('pengguna.update', $user->id) }}"
+                            action="{{ route('pengguna.update_keahlian', $user->id) }}"
                             method="post"
                         >
                             @csrf
                             @method('put')
-                            <input
-                                type="hidden"
-                                name="action"
-                                value="update_membership"
-                            />
+
                             <div class="row">
                                 <div class="col-7">
                                     <x-form.select
@@ -239,7 +349,8 @@
                                         label="Current Plan"
                                         name="plan_id"
                                         id="plan_id"
-                                        :value="false"
+                                        :value="(!$membership_is_empty) ? $user->memberships[0]->plan_id : ''"
+                                        :error="$errors->first('plan_id')"
                                     />
                                 </div>
                                 <div class="col-5">
@@ -247,8 +358,9 @@
                                         id="expire_on"
                                         name="expire_on"
                                         type="date"
-                                        value="false"
+                                        value="(!$membership_is_empty) ? $user->memberships[0]->expire_on : ''"
                                         label="Tarikh Luput"
+                                        :error="$errors->first('expire_on')"
                                     />
                                 </div>
 
@@ -258,9 +370,19 @@
                                         name="status"
                                         label="Status"
                                         :options="$membership_options"
-                                        value="false"
+                                        value="(!$membership_is_empty) ? $user->memberships[0]->status : ''"
                                         inline="true"
+                                        :error="$errors->first('status')"
                                     />
+                                </div>
+
+                                <div class="col-12">
+                                    <button
+                                        class="btn btn-primary"
+                                        type="submit"
+                                    >
+                                        Simpan
+                                    </button>
                                 </div>
                             </div>
                         </form>
@@ -270,59 +392,100 @@
                 <div class="card">
                     <div class="card-body">
                         <h3>Maklumat Bayaran</h3>
-                        <div class="row">
-                            <div class="col-7">
-                                <x-form.select
-                                    :options="$plan_options"
-                                    label="Pilih Pelan"
-                                    name="plan_id"
-                                    id="plan_id"
-                                    :value="false"
-                                />
+
+                        <form
+                            action="{{ route('pengguna.tambah_bayaran', $user->id) }}"
+                            method="post"
+                        >
+                            @csrf
+                            @method('put')
+                            <div class="row">
+                                <div class="col-7">
+                                    <x-form.select
+                                        :options="$plan_options"
+                                        label="Pilih Pelan"
+                                        name="plan_id"
+                                        id="payment_plan_id"
+                                        :value="null"
+                                        :error="$errors->first('$plan_id')"
+                                    />
+                                </div>
+                                <div class="col-5">
+                                    <x-form.select
+                                        :options="$payment_methods"
+                                        label="Kaedah Bayaran"
+                                        name="payment_method"
+                                        id="payment_method"
+                                        :value="null"
+                                        :error="$errors->first('$payment_method')"
+                                    />
+                                </div>
+                                <div class="col-7">
+                                    <x-form.input
+                                        id="amount"
+                                        name="amount"
+                                        type="number"
+                                        :value="null"
+                                        label="Jumlah"
+                                        readonly
+                                    />
+                                </div>
+                                <div class="col-5">
+                                    <x-form.input
+                                        id="new_expiry"
+                                        name="new_expiry"
+                                        type="date"
+                                        :value="null"
+                                        label="Tarikh Luput"
+                                        readonly
+                                    />
+                                </div>
+                                <div class="col-12">
+                                    <x-form.input
+                                        id="remarks"
+                                        name="remarks"
+                                        type="text"
+                                        :value="null"
+                                        label="Nota"
+                                    />
+                                </div>
                             </div>
-                            <div class="col-5">
-                                <x-form.select
-                                    :options="$plan_options"
-                                    label="Kaedah Bayaran"
-                                    name="plan_id"
-                                    id="plan_id"
-                                    :value="false"
-                                />
-                            </div>
-                            <div class="col-7">
-                                <x-form.input
-                                    id="amount"
-                                    name="amount"
-                                    type="number"
-                                    value="false"
-                                    label="Jumlah"
-                                />
-                            </div>
-                            <div class="col-5">
-                                <x-form.input
-                                    id="expire_on"
-                                    name="expire_on"
-                                    type="date"
-                                    value="false"
-                                    label="Tarikh Luput"
-                                />
-                            </div>
-                            <div class="col-12">
-                                <x-form.input
-                                    id="expire_on"
-                                    name="expire_on"
-                                    type="text"
-                                    value="false"
-                                    label="Nota"
-                                />
-                            </div>
-                        </div>
-                        <button class="btn btn-primary" type="submit">
-                            Simpan
-                        </button>
+                            <button class="btn btn-primary" type="submit">
+                                Simpan
+                            </button>
+                        </form>
+                        <h3 class="mt-4">Bayaran Lepas</h3>
                     </div>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Tarikh</th>
+                                <th>Jumlah</th>
+                                <th>Kaedah</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (! $user->memberships[0]->payments->isEmpty())
+                                @foreach ($user->memberships[0]->payments as $payment)
+                                    <tr>
+                                        <td>{{ $payment->created_at }}</td>
+                                        <td>{{ $payment->amount }}</td>
+                                        <td>{{ $payment->payment_method }}</td>
+                                    </tr>
+                                @endforeach
+                            @endif
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
     </div>
 @endsection
+
+@push('js')
+    <script>
+        var js_plans = {!! $js_plans !!};
+    </script>
+
+    <script src="/js/user-payment.js"></script>
+@endpush

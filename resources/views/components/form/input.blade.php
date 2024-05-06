@@ -6,6 +6,8 @@
         class="form-control @if(!empty($error)) is-invalid @endif"
         id="{{ $id }}"
         value="{{ $value }}"
+        @if(isset($readonly)) readonly @endif
+        @if(isset($disabled)) disabled @endif
     />
     @if (! empty($error))
         <div class="invalid-feedback">{{ $error }}</div>

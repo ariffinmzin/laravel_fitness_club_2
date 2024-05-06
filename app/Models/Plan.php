@@ -62,4 +62,17 @@ class Plan extends Model
         return $formattedPlans;
 
     }
+
+    public static function getIdPriceJSON()
+    {
+        $plans = self::all();
+
+        $associative_array = [];
+
+        foreach ($plans as $plan) {
+            $associative_array[$plan->id] = $plan->toArray();
+
+        }
+        return json_encode($associative_array);
+    }
 }

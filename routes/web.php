@@ -28,5 +28,7 @@ Route::middleware(['auth', 'can:is-admin'])->group(function () {
 
 	Route::resource('pengguna', PenggunaController::class);
 	Route::resource('plan', PlanController::class);
+	Route::put('pengguna/{user}/update_keahlian', [PenggunaController::class, 'update_keahlian'])->name('pengguna.update_keahlian');
+	Route::put('pengguna/{user}/tambah_bayaran', [PenggunaController::class, 'tambah_bayaran'])->name('pengguna.tambah_bayaran');
 
 });
