@@ -1,17 +1,19 @@
 <?php
 
+use App\Http\Controllers\CheckoutController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PlanController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PenggunaController;
+use App\Http\Controllers\DashboardController;
 
 Route::get('/', function () {
 	return view('welcome');
 });
 
-Route::view('dashboard', 'dashboard')
-	->name('dashboard')
-	->middleware(['auth', 'verified']);
+// Route::view('dashboard', 'dashboard')
+
+Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard')->middleware(['auth', 'verified']);
 
 Route::view('home', 'home')
 	->name('home')
@@ -22,6 +24,8 @@ Route::middleware(['web', 'auth'])->group(function () {
 	Route::post('/profile/avatar', [ProfileController::class, 'updateAvatar'])->name('profile.avatar');
 	Route::delete('/profile/avatar', [ProfileController::class, 'removeOldAvatar'])->name('profile.deleteavatar');
 	Route::delete('/profile/device/{id}', [ProfileController::class, 'removeDevice'])->name('profile.deletedevice');
+	Route::get('/checkout/{plan:code}/{payment_method}', [CheckoutController::class, 'index'])->name('checkout.go');
+	Route::get('/verify/{payment:payment_code}/{payment_method}', [CheckoutController::class, 'verify'])->name('checkout.verify');
 });
 
 Route::middleware(['auth', 'can:is-admin'])->group(function () {

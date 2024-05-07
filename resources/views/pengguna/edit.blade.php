@@ -167,10 +167,14 @@
 
 
 
+
+
                                 <div class="invalid-feedback">
                                     {{ $message }}
                                 </div>
                             @enderror
+
+
 
 
 
@@ -465,14 +469,18 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @if (! $user->memberships[0]->payments->isEmpty())
-                                @foreach ($user->memberships[0]->payments as $payment)
-                                    <tr>
-                                        <td>{{ $payment->created_at }}</td>
-                                        <td>{{ $payment->amount }}</td>
-                                        <td>{{ $payment->payment_method }}</td>
-                                    </tr>
-                                @endforeach
+                            @if (! $user->memberships->isEmpty())
+                                @if (! $user->memberships[0]->payments->isEmpty())
+                                    @foreach ($user->memberships[0]->payments as $payment)
+                                        <tr>
+                                            <td>{{ $payment->created_at }}</td>
+                                            <td>{{ $payment->amount }}</td>
+                                            <td>
+                                                {{ $payment->payment_method }}
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                @endif
                             @endif
                         </tbody>
                     </table>

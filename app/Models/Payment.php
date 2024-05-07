@@ -26,6 +26,11 @@ class Payment extends Model
         'banktransfer' => 'Bank Transfer'
     ];
 
+    public const SUPPORTED_PAYMENTS = [
+        'stripe'
+    ];
+
+
     public function membership(): BelongsTo
     {
         return $this->belongsTo(Membership::class);
