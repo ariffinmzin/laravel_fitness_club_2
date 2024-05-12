@@ -16,6 +16,8 @@ class Payment extends Model
         'payment_method',
         'payment_status',
         'payment_code',
+        'user_id',
+        'plan_id',
         'remarks'
     ];
 
