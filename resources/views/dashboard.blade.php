@@ -106,8 +106,7 @@
                                 @elseif ($daysLeft == 0)
                                     hari ini
                                 @else
-                                        { { ceil(abs($daysLeft)) }} hari yang
-                                        lalu
+                                    {{ ceil(abs($daysLeft)) }} hari yang lalu
                                 @endif
                             </p>
                         @else
@@ -133,18 +132,31 @@
                                         <h4>{{ $plan->name }}</h4>
                                         RM{{ $plan->price }}
                                     </div>
+                                    <div>
+                                        <a
+                                            href="{{
+                                                route('checkout.go', [
+                                                    'plan' => $plan->code,
+                                                    'payment_method' => 'stripe',
+                                                ])
+                                            }}"
+                                            class="btn btn-primary d-block w-100 mb-2"
+                                        >
+                                            Bayar dengan Stripe
+                                        </a>
 
-                                    <a
-                                        href="{{
-                                            route('checkout.go', [
-                                                'plan' => $plan->code,
-                                                'payment_method' => 'stripe',
-                                            ])
-                                        }}"
-                                        class="btn btn-primary"
-                                    >
-                                        Bayar dengan Stripe
-                                    </a>
+                                        <a
+                                            href="{{
+                                                route('checkout.go', [
+                                                    'plan' => $plan->code,
+                                                    'payment_method' => 'securepay',
+                                                ])
+                                            }}"
+                                            class="btn btn-primary d-block w-100"
+                                        >
+                                            Bayar dengan Securepay
+                                        </a>
+                                    </div>
                                 </div>
                             </div>
                         @endforeach

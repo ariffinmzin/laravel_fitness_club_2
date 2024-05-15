@@ -29,7 +29,8 @@ class Payment extends Model
     ];
 
     public const SUPPORTED_PAYMENTS = [
-        'stripe'
+        'stripe',
+        'securepay'
     ];
 
 

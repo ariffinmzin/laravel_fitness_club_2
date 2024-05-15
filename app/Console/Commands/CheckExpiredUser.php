@@ -4,6 +4,8 @@ namespace App\Console\Commands;
 
 use App\Models\User;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\SendMembershipExpiredEmail;
 
 class CheckExpiredUser extends Command
 {
@@ -36,11 +38,13 @@ class CheckExpiredUser extends Command
 
         $counter = 0;
         foreach ($expired_users as $expired_user) {
+
+            Mail::to($expired_user->email)->send(new SendMembershipExpiredEmail($expired_user));
             $membership = $expired_user->memberships()->first();
             $membership->status = 'expired';
             $membership->save();
 
-            $this - info("User {$expired_user->email} has been expired.");
+            $this->info("User {$expired_user->email} has been expired.");
             $counter++;
         }
         $this->info("{$counter} users have expired.");

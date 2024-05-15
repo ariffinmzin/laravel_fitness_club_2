@@ -36,3 +36,5 @@ Route::middleware(['auth', 'can:is-admin'])->group(function () {
 	Route::put('pengguna/{user}/tambah_bayaran', [PenggunaController::class, 'tambah_bayaran'])->name('pengguna.tambah_bayaran');
 
 });
+
+Route::view('/mail/membership-expired', 'mail.membership-expired', ['user' => (object) ['name' => 'Karim']]);

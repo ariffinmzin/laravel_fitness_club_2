@@ -46,6 +46,8 @@ class CheckoutController extends Controller
      * /checkout/{plan}/{payment_gateway}
      */
 
+    protected const PG_NAMESPACE = "\\App\\Libraries\\PaymentGateway\\";
+
 
     public function index(Request $request, Plan $plan, $payment_method)
     {
@@ -55,54 +57,63 @@ class CheckoutController extends Controller
         }
         $payment = $this->record_payment($plan, $payment_method);
 
-        return $this->{$payment_method . '_go'}($plan, $payment);
+        $pg_classname = self::PG_NAMESPACE . ucfirst($payment_method);
+
+        $payment_gateway = new $pg_classname();
+
+        $redirect_url = $payment_gateway->go($plan, $payment);
+
+        return redirect($redirect_url);
+
+
+        // return $this->{$payment_method . '_go'}($plan, $payment);
 
     }
 
-    protected function stripe_go(Plan $plan, Payment $payment)
-    {
-        $stripe = new \Stripe\StripeClient(env('STRIPE_SECRET'));
-        $verify_url = route('checkout.verify', [
-            'payment' => $payment->payment_code,
-            'payment_method' => 'stripe',
+    // protected function stripe_go(Plan $plan, Payment $payment)
+    // {
+    //     $stripe = new \Stripe\StripeClient(env('STRIPE_SECRET'));
+    //     $verify_url = route('checkout.verify', [
+    //         'payment' => $payment->payment_code,
+    //         'payment_method' => 'stripe',
 
-        ]) . '?session_id={CHECKOUT_SESSION_ID}';
+    //     ]) . '?session_id={CHECKOUT_SESSION_ID}';
 
-        $response = $stripe->checkout->sessions->create([
-            'success_url' => $verify_url,
-            'payment_method_types' => ['card'],
-            'line_items' => [
-                [
-                    'price_data' => [
-                        'product_data' => [
-                            'name' => $plan->name
-                        ],
-                        'unit_amount' => $payment->getRawOriginal('amount'),
-                        'currency' => 'MYR'
-                    ],
-                    'quantity' => 1
+    //     $response = $stripe->checkout->sessions->create([
+    //         'success_url' => $verify_url,
+    //         'payment_method_types' => ['card'],
+    //         'line_items' => [
+    //             [
+    //                 'price_data' => [
+    //                     'product_data' => [
+    //                         'name' => $plan->name
+    //                     ],
+    //                     'unit_amount' => $payment->getRawOriginal('amount'),
+    //                     'currency' => 'MYR'
+    //                 ],
+    //                 'quantity' => 1
 
-                ]
-            ],
-            'mode' => 'payment',
-            'allow_promotion_codes' => false,
-            'metadata' => [
-                'plan' => $plan->code,
-                'payment_code' => $payment->payment_code,
-            ]
+    //             ]
+    //         ],
+    //         'mode' => 'payment',
+    //         'allow_promotion_codes' => false,
+    //         'metadata' => [
+    //             'plan' => $plan->code,
+    //             'payment_code' => $payment->payment_code,
+    //         ]
 
-        ]);
+    //     ]);
 
-        // dd($response);
+    //     // dd($response);
 
-        return redirect($response['url']);
+    //     return redirect($response['url']);
 
-    }
+    // }
 
-    protected function securepay_go()
-    {
+    // protected function securepay_go()
+    // {
 
-    }
+    // }
 
     protected function record_payment(Plan $plan, $payment_method)
     {
@@ -134,13 +145,21 @@ class CheckoutController extends Controller
 
         // echo "<h1>Payment received</h1>";
 
+
         if (!in_array($payment_method, Payment::SUPPORTED_PAYMENTS)) {
             abort(405, "Unknown payment method");
         }
 
-        $result = $this->{$payment_method . '_verify'}($request, $payment);
 
-        if ($result['success']) {
+        $pg_classname = self::PG_NAMESPACE . ucfirst($payment_method);
+
+        $payment_gateway = new $pg_classname();
+
+        $result = $payment_gateway->verify($request, $payment);
+
+        // $result = $this->{$payment_method . '_verify'}($request, $payment);
+
+        if ($result['success'] && ($payment->payment_status == 'pending')) {
 
             $this->process_payment($payment);
 
@@ -178,47 +197,47 @@ class CheckoutController extends Controller
 
     }
 
-    protected function stripe_verify(Request $request, Payment $payment)
-    {
-        $stripe = new \Stripe\StripeClient(env('STRIPE_SECRET'));
-        $session = $stripe->checkout->sessions->retrieve($request->session_id);
+    // protected function stripe_verify(Request $request, Payment $payment)
+    // {
+    //     $stripe = new \Stripe\StripeClient(env('STRIPE_SECRET'));
+    //     $session = $stripe->checkout->sessions->retrieve($request->session_id);
 
-        if ($session->amount_total == $payment->getRawOriginal('amount') && ($session->currency == 'myr') && ($session->payment_status == 'paid') && ($session->status == 'complete')) {
+    //     if ($session->amount_total == $payment->getRawOriginal('amount') && ($session->currency == 'myr') && ($session->payment_status == 'paid') && ($session->status == 'complete')) {
 
-            return [
-                'success' => true,
-                'payment_code' => $session->metadata->payment_code,
-                'plan' => $session->metadata->plan
-            ];
+    //         return [
+    //             'success' => true,
+    //             'payment_code' => $session->metadata->payment_code,
+    //             'plan' => $session->metadata->plan
+    //         ];
 
-        }
+    //     }
 
-        $errors = [];
+    //     $errors = [];
 
-        if ($session->amount_total != $payment->getRawOriginal('amount')) {
+    //     if ($session->amount_total != $payment->getRawOriginal('amount')) {
 
-            $errors[] = 'Amount paid does not match';
+    //         $errors[] = 'Amount paid does not match';
 
-        }
+    //     }
 
-        if ($session->currency != 'myr') {
-            $errors[] = 'Currency does not match';
-        }
+    //     if ($session->currency != 'myr') {
+    //         $errors[] = 'Currency does not match';
+    //     }
 
-        if ($session->payment_status != 'paid') {
-            $errors[] = 'Payment status is not paid';
-        }
+    //     if ($session->payment_status != 'paid') {
+    //         $errors[] = 'Payment status is not paid';
+    //     }
 
-        if ($session->status != 'complete') {
-            $errors[] = 'Status is not completed';
-        }
+    //     if ($session->status != 'complete') {
+    //         $errors[] = 'Status is not completed';
+    //     }
 
-        return [
-            'success' => false,
-            'errors' => $errors,
-            'payment_code' => $session->metadata->payment_code,
-            'plan' => $session->metadata->plan
-        ];
+    //     return [
+    //         'success' => false,
+    //         'errors' => $errors,
+    //         'payment_code' => $session->metadata->payment_code,
+    //         'plan' => $session->metadata->plan
+    //     ];
 
-    }
+    // }
 }
