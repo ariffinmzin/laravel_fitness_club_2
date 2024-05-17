@@ -35,6 +35,11 @@
 
 @endif
 <div class="card">
+    <div class="card-body pb-0">
+        {{ $users->links() }}
+
+    </div>
+   
     <table class="table table-striped">
         <thead>
             <tr>
@@ -61,6 +66,12 @@
             </tbody>
         </thead>
     </table>
+
+    <!-- {!! $users->render() !!} -->
+    <div class="card-body py-0">
+        {{ $users->links() }}
+
+    </div>
 
 
 </div>

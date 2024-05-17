@@ -26,6 +26,7 @@ Route::middleware(['web', 'auth'])->group(function () {
 	Route::delete('/profile/device/{id}', [ProfileController::class, 'removeDevice'])->name('profile.deletedevice');
 	Route::get('/checkout/{plan:code}/{payment_method}', [CheckoutController::class, 'index'])->name('checkout.go');
 	Route::get('/verify/{payment:payment_code}/{payment_method}', [CheckoutController::class, 'verify'])->name('checkout.verify');
+
 });
 
 Route::middleware(['auth', 'can:is-admin'])->group(function () {
@@ -38,3 +39,4 @@ Route::middleware(['auth', 'can:is-admin'])->group(function () {
 });
 
 Route::view('/mail/membership-expired', 'mail.membership-expired', ['user' => (object) ['name' => 'Karim']]);
+Route::post('/verify/{payment:payment_code}/{payment_method}', [CheckoutController::class, 'verify']);

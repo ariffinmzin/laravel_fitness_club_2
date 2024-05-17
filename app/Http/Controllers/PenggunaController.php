@@ -20,7 +20,8 @@ class PenggunaController extends Controller
     {
         //
         // echo "<h1>Senarai Pengguna</h1>";
-        $users = User::all();
+        // $users = User::all();
+        $users = User::paginate(20);
         return view('pengguna.index', compact('users'));
     }
 
