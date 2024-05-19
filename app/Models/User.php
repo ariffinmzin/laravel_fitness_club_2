@@ -7,10 +7,11 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable implements MustVerifyEmail
 {
-    use HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable;
 
     public const USER_ROLES = [
         'admin' => 'Admin',
@@ -61,5 +62,10 @@ class User extends Authenticatable implements MustVerifyEmail
     public function memberships(): HasMany
     {
         return $this->hasMany(Membership::class);
+    }
+
+    public function isAdmin()
+    {
+        return $this->role === 'admin';
     }
 }
